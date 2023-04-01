@@ -1,6 +1,6 @@
 import random
 
-from cartes import CarteSetBelote, JeuDeBelote
+from cartes import CarteSetBelote, JeuDeBelote, Pli
 from joueurs import ANNONCE_NULLE, Joueur
 
 
@@ -30,7 +30,7 @@ class Partie:
     def lancer_manche(self):
         while self.equipe_gagnante is None:
             print(f"donneur: {self.donneur}")
-            fin_manche = FinManche(partie=self).lancer()
+            fin_manche = Manche(partie=self).lancer()
             self.equipeA.score += fin_manche.score_equipeA
             self.equipeB.score += fin_manche.score_equipeB
             self.donneur: Joueur = fin_manche.nouveau_donneur
@@ -75,7 +75,7 @@ class PhaseJeu:
 
     def lancer(self):
         while True:
-            pli = CarteSetBelote()
+            pli = Pli()
             for joueur in self.joueurs:
                 carte_jouee = joueur._jouer_carte(pli=pli)
                 pli.append(carte_jouee)
@@ -84,20 +84,18 @@ class PhaseJeu:
             pli_par_force = pli._ranger_par_force
 
             carte_jouee_gagnante = pli_par_force[0]
-
-            carte_gagnante = carte_jouee_gagnante
             joueur_gagnant = carte_jouee_gagnante.joueur
-
             joueur_gagnant.plis.append(pli)
 
             if len(self.joueurs[0].main) == 0:
+                pli.dernier_pli = True
                 break
 
 
-class FinManche:
+class Manche:
     schema_donne = (3, 2, 3)
 
-    class FinFinMancheInterface:
+    class FinMancheInterface:
         def __init__(self, score_equipeA, score_equipeB, nouveau_donneur):
             self.score_equipeA = score_equipeA
             self.score_equipeB = score_equipeB
@@ -110,14 +108,14 @@ class FinManche:
 
         self.partie.jeu_de_carte._couper()
 
-    def _resultat_fin_manche(self) -> FinFinMancheInterface:
-        return self.FinFinMancheInterface(
+    def _resultat_fin_manche(self) -> FinMancheInterface:
+        return self.FinMancheInterface(
             score_equipeA=self.score_equipeA,
             score_equipeB=self.score_equipeB,
             nouveau_donneur=self.joueur_suivant(joueur_precedent=self.partie.donneur),
         )
 
-    def lancer(self) -> FinFinMancheInterface:
+    def lancer(self) -> FinMancheInterface:
         print(f"Ordre initial: {self.ordre_initial}")
 
         reponse = self.melangeur._demander_melanger()
@@ -129,7 +127,7 @@ class FinManche:
         phase_annonce = PhaseAnnonce(ordre_initial=self.ordre_initial)
         self.meilleure_annonce = phase_annonce.lancer()
 
-        if self.meilleure_annonce.score_a_faire == 0:
+        if self.meilleure_annonce.joueur is None:
             joueurs_ordre_random = self.joueurs
             random.shuffle(joueurs_ordre_random)
             for joueur in joueurs_ordre_random:
@@ -145,6 +143,19 @@ class FinManche:
         phase_jeu = PhaseJeu(manche=self, ordre_initial=self.ordre_initial)
         phase_jeu.lancer()
 
+        score_equipeA, score_equipeB = self._compter_points()
+        equipe_prenante = self.meilleure_annonce.joueur.equipe
+        if equipe_prenante == self.partie.equipeA:
+            if score_equipeA >= self.meilleure_annonce.score_a_faire:
+                print(f"Bravo {equipe_prenante}, contrat rempli")
+            else:
+                print(f"Contrat chuté par {equipe_prenante}")
+        else:
+            if score_equipeB >= self.meilleure_annonce.score_a_faire:
+                print(f"Bravo {equipe_prenante}, contrat rempli")
+            else:
+                print(f"Contrat chuté par {equipe_prenante}")
+
     @property
     def ordre_initial(self):
         joueur1 = self.joueur_suivant(joueur_precedent=self.partie.donneur)
@@ -153,6 +164,17 @@ class FinManche:
         joueur4 = self.joueur_suivant(joueur_precedent=joueur3)
 
         return [joueur1, joueur2, joueur3, joueur4]
+
+    def _compter_points(self):
+        score_equipeA = (
+            self.partie.equipeA.joueur1._total_points
+            + self.partie.equipeA.joueur2._total_points
+        )
+        score_equipeB = (
+            self.partie.equipeB.joueur1._total_points
+            + self.partie.equipeB.joueur2._total_points
+        )
+        return score_equipeA, score_equipeB
 
     @property
     def joueurs(self) -> list[Joueur]:

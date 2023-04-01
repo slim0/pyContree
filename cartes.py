@@ -1,6 +1,6 @@
 import random
 from collections.abc import MutableSequence
-from typing import Literal
+from typing import Literal, Optional
 
 VALEURS = ("7", "8", "9", "10", "V", "D", "R", "1")
 
@@ -168,6 +168,13 @@ class CarteSetBelote(MutableSequence):
         return coeurs, piques, carreaux, trefles
 
     @property
+    def _points(self):
+        total = 0
+        for carte in self.cartes:
+            total += carte.score
+        return total
+
+    @property
     def _ranger_par_force(self):
         coeurs, piques, carreaux, trefles = self._trier_par_couleur()
         coeurs.sort(reverse=True)
@@ -201,6 +208,18 @@ class CarteSetBelote(MutableSequence):
     @property
     def _carte_la_plus_forte(self):
         return self._ranger_par_force[0]
+
+
+class Pli(CarteSetBelote):
+    def __init__(
+        self, cartes: Optional[list[CarteBelote]] = None, dernier_pli: bool = False
+    ) -> None:
+        super().__init__(cartes)
+        self.dernier_pli = dernier_pli
+
+    @property
+    def _points(self):
+        return self._points if not self.dernier_pli else self._points + 10
 
 
 class JeuDeBelote(CarteSetBelote):

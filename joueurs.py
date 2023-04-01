@@ -1,12 +1,12 @@
 from typing import Optional
 
-from cartes import COEUR, COULEURS, CarteSetBelote, Couleur
+from cartes import COEUR, COULEURS, CarteSetBelote, Couleur, Pli
 
 
 class Annonce:
     VALID_SCORES = list(range(80, 170, 10)) + [0, 1000, 2000]
 
-    def __init__(self, atout, score_a_faire):
+    def __init__(self, atout, score_a_faire, joueur):
         if int(score_a_faire) not in self.VALID_SCORES:
             raise ValueError("score_a_faire non valide")
 
@@ -15,13 +15,14 @@ class Annonce:
 
         self.atout = atout
         self.score_a_faire = score_a_faire
+        self.joueur = joueur
 
     def __lt__(self, other):
         if self.score_a_faire < other.score_a_faire:
             return True
 
 
-ANNONCE_NULLE = Annonce(atout=COEUR, score_a_faire=0)
+ANNONCE_NULLE = Annonce(atout=COEUR, score_a_faire=0, joueur=None)
 
 
 def poser_question(question, reponses_possibles):
@@ -37,7 +38,7 @@ class Joueur:
         self.main: CarteSetBelote = CarteSetBelote()
         self.doit_annoncer: bool = True
         self.equipe: Optional[Equipe] = None  # Défini lors de la création de l'équipe
-        self.plis: list[CarteSetBelote] = []
+        self.plis: list[Pli] = []
 
     def __repr__(self) -> str:
         return self.nom
@@ -46,6 +47,13 @@ class Joueur:
         self.doit_annoncer = True
         self.main = CarteSetBelote()
         self.plis = []
+
+    @property
+    def _total_points(self):
+        score = 0
+        for pli in self.plis:
+            score += pli._points
+        return score
 
     def _afficher_main(self):
         print(self.main)
@@ -69,7 +77,7 @@ class Joueur:
             )
 
             score = poser_question("Score ?", scores_possibles)
-            annonce = Annonce(atout=couleur, score_a_faire=int(score))
+            annonce = Annonce(atout=couleur, score_a_faire=int(score), joueur=self)
         else:
             annonce = None
 
