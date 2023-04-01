@@ -1,3 +1,5 @@
+from typing import Optional
+
 from cartes import COEUR, COULEURS, CarteSetBelote, Couleur
 
 
@@ -31,10 +33,11 @@ def poser_question(question, reponses_possibles):
 
 class Joueur:
     def __init__(self, nom: str):
-        self.nom = nom
-        self.main = CarteSetBelote()
-        self.doit_annoncer = True
-        self.equipe = None  # Défini lors de la création de l'équipe
+        self.nom: str = nom
+        self.main: CarteSetBelote = CarteSetBelote()
+        self.doit_annoncer: bool = True
+        self.equipe: Optional[Equipe] = None  # Défini lors de la création de l'équipe
+        self.plis: list[CarteSetBelote] = []
 
     def __repr__(self) -> str:
         return self.nom
