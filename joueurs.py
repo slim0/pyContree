@@ -166,14 +166,12 @@ class Joueur:
 
 class Equipe:
     def __init__(self, joueur1, joueur2):
-        self.joueur1 = joueur1
-        self.joueur2 = joueur2
+        self.joueur1: Joueur = joueur1
+        self.joueur2: Joueur = joueur2
 
         joueur1.equipe = self
         joueur2.equipe = self
-
-        self.plis = []
-        self.score = 0
+        self.score: int = 0
 
     def __repr__(self) -> str:
         return f"{self.joueur1.nom} & {self.joueur2.nom}"
