@@ -53,6 +53,8 @@ class CarteBelote:
 
         if self.valeur == "1":
             return 11
+        elif self.valeur == "10":
+            return 10
         elif self.valeur == "V":
             return 2
         elif self.valeur == "D":
