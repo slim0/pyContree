@@ -158,6 +158,7 @@ class Joueur:
                     )
 
                     self._jouer_carte(pli=pli)
+
                 else:
                     if self._atout_en_main():
                         if (
