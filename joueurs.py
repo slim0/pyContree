@@ -1,6 +1,6 @@
 from typing import Optional
 
-from cartes import COEUR, COULEURS, CarteSetBelote, Couleur, Pli
+from cartes import COEUR, COULEURS, CarteBelote, CarteSetBelote, Couleur, Pli
 
 
 class Annonce:
@@ -115,7 +115,7 @@ class Joueur:
     def _atout_en_main(self) -> bool:
         return True if True in [carte.atout for carte in self.main] else False
 
-    def _meilleur_atout_en_main(self, other_atout) -> bool:
+    def _meilleur_atout_en_main(self, other_atout: CarteBelote) -> bool:
         if other_atout.atout is False:
             raise ValueError("Vous devez appeler cette fonction avec un autre atout")
         meilleurs_atouts_en_main = list(
@@ -126,7 +126,7 @@ class Joueur:
 
         return False
 
-    def _jouer_carte(self, pli):
+    def _jouer_carte(self, pli: Pli):
         premiere_carte_jouee = pli[0] if pli else None
         carte_precedente = pli[-1] if pli else None
 
