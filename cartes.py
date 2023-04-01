@@ -110,6 +110,9 @@ class CarteSetBelote(MutableSequence):
             cartes = []
         self.cartes = cartes
 
+    def __repr__(self) -> str:
+        return self.cartes.__repr__()
+
     def __getitem__(self, index):
         return self.cartes[index]
 

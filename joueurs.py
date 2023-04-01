@@ -43,7 +43,7 @@ class Joueur:
         return self.nom
 
     def _afficher_main(self):
-        print(self.main.cartes)
+        print(self.main)
 
     def _annoncer(self, meilleure_annonce):
         self._afficher_main()
