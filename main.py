@@ -10,4 +10,4 @@ equipeA = Equipe(joueur1=simon, joueur2=helene)
 equipeB = Equipe(joueur1=etienne, joueur2=julien)
 
 partie = Partie(equipeA=equipeA, equipeB=equipeB)
-tourne = partie.lancer_tourne()
+manche = partie.lancer_manche()

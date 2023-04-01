@@ -1,13 +1,13 @@
 import random
 
-from cartes import CarteSetBelote, JeuDeCarte32
+from cartes import CarteSetBelote, JeuDeBelote
 from joueurs import ANNONCE_NULLE
 
 
 class Partie:
     def __init__(self, equipeA, equipeB, score_victoire: int = 1001):
         self.score_victoire = score_victoire
-        self.jeu_de_carte = JeuDeCarte32()
+        self.jeu_de_carte = JeuDeBelote()
         self.equipeA = equipeA
         self.equipeB = equipeB
         self.donneur = self.joueurs[0]
@@ -27,13 +27,13 @@ class Partie:
             self.equipeB.joueur2,
         ]
 
-    def lancer_tourne(self):
+    def lancer_manche(self):
         while self.equipe_gagnante is None:
             print(f"donneur: {self.donneur}")
-            fin_tourne = Tourne(partie=self).lancer()
-            self.equipeA.score += fin_tourne.score_equipeA
-            self.equipeB.score += fin_tourne.score_equipeB
-            self.donneur = fin_tourne.nouveau_donneur
+            fin_manche = FinManche(partie=self).lancer()
+            self.equipeA.score += fin_manche.score_equipeA
+            self.equipeB.score += fin_manche.score_equipeB
+            self.donneur = fin_manche.nouveau_donneur
 
             if (
                 self.equipeA.score >= self.score_victoire
@@ -70,32 +70,33 @@ class PhaseAnnonce:
 
 
 class PhaseJeu:
-    def __init__(self, tourne, ordre_initial) -> None:
-        self.tourne = tourne
+    def __init__(self, manche, ordre_initial) -> None:
+        self.manche = manche
         self.joueurs = ordre_initial
 
     def lancer(self):
         while True:
             pli = CarteSetBelote()
             for joueur in self.joueurs:
-                carte_jouee = joueur._jouer_carte(cartes_jouees=pli)
+                carte_jouee = joueur._jouer_carte(pli=pli)
                 pli.append(carte_jouee)
+                print(f"Carte jouée: {carte_jouee}")
 
-            pli.sort()
+            pli_par_force = pli._ranger_par_force
 
-            carte_jouee_gagnante = pli[-1]
+            carte_jouee_gagnante = pli_par_force[0]
 
-            carte_gagnante = carte_jouee_gagnante.carte
+            carte_gagnante = carte_jouee_gagnante
             joueur_gagnant = carte_jouee_gagnante.joueur
 
             if len(self.joueurs[0].main) == 0:
                 break
 
 
-class Tourne:
+class FinManche:
     schema_donne = (3, 2, 3)
 
-    class FinTourneInterface:
+    class FinFinMancheInterface:
         def __init__(self, score_equipeA, score_equipeB, nouveau_donneur):
             self.score_equipeA = score_equipeA
             self.score_equipeB = score_equipeB
@@ -108,14 +109,14 @@ class Tourne:
 
         self.partie.jeu_de_carte._couper()
 
-    def _resultat_fin_tourne(self) -> FinTourneInterface:
-        return self.FinTourneInterface(
+    def _resultat_fin_manche(self) -> FinFinMancheInterface:
+        return self.FinFinMancheInterface(
             score_equipeA=self.score_equipeA,
             score_equipeB=self.score_equipeB,
             nouveau_donneur=self.joueur_suivant(joueur_precedent=self.partie.donneur),
         )
 
-    def lancer(self) -> FinTourneInterface:
+    def lancer(self) -> FinFinMancheInterface:
         print(f"Ordre initial: {self.ordre_initial}")
 
         reponse = self.melangeur._demander_melanger()
@@ -133,15 +134,15 @@ class Tourne:
             for joueur in joueurs_ordre_random:
                 joueur.doit_annoncer = True
                 self.partie.jeu_de_carte.cartes += joueur.main
-                joueur.main = []
-            return self._resultat_fin_tourne()
+                joueur.main = CarteSetBelote()
+            return self._resultat_fin_manche()
 
         for joueur in self.joueurs:
             for carte in joueur.main:
                 if carte.couleur.forme == self.meilleure_annonce.atout.forme:
                     carte.atout = True
 
-        phase_jeu = PhaseJeu(tourne=self, ordre_initial=self.ordre_initial)
+        phase_jeu = PhaseJeu(manche=self, ordre_initial=self.ordre_initial)
         phase_jeu.lancer()
 
     @property
@@ -174,9 +175,8 @@ class Tourne:
         for x in schema_donne:
             for joueur in self.partie.joueurs:
                 self.partie.jeu_de_carte._donner_x_cartes(joueur=joueur, x=x)
-
         for joueur in self.partie.joueurs:
-            joueur.main.sort(pour="main")
+            joueur.main.sort()
 
     def _etat(self):
         for joueur in self.partie.joueurs:

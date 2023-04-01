@@ -75,7 +75,7 @@ class Joueur:
         return False
 
     def _ajouter_carte_en_main(self, carte):
-        self.main.cartes.append(carte)
+        self.main.append(carte)
 
     def _faire_annonce(self) -> bool:
         reponse = input(f"Souhaitez-vous faire une annonce {self.nom}? [o/n]: ")
@@ -100,7 +100,7 @@ class Joueur:
         return True if True in [carte.atout for carte in self.main] else False
 
     def _meilleur_atout_en_main(self, other_atout) -> bool:
-        if other_atout.carte.atout is False:
+        if other_atout.atout is False:
             raise ValueError("Vous devez appeler cette fonction avec un autre atout")
         meilleurs_atouts_en_main = list(
             filter(lambda x: x.atout and x > other_atout, self.main)
@@ -110,9 +110,9 @@ class Joueur:
 
         return False
 
-    def _jouer_carte(self, cartes_jouees):
-        premiere_carte_jouee = cartes_jouees[0] if cartes_jouees else None
-        carte_precedente = cartes_jouees[-1] if cartes_jouees else None
+    def _jouer_carte(self, pli):
+        premiere_carte_jouee = pli[0] if pli else None
+        carte_precedente = pli[-1] if pli else None
 
         print(f"À toi de jouer {self}")
         self._afficher_main()
@@ -128,37 +128,34 @@ class Joueur:
         carte_a_jouer = self.main[index_carte]
 
         if premiere_carte_jouee is not None:
-            carte_gagnante = cartes_jouees.carte_gagnante
+            carte_gagnante = pli._carte_la_plus_forte
 
-            if (
-                carte_a_jouer.carte.couleur.forme
-                != premiere_carte_jouee.carte.couleur.forme
-            ):
+            if carte_a_jouer.couleur.forme != premiere_carte_jouee.couleur.forme:
                 if self._couleur_demandee_en_main(
-                    couleur_demandee=premiere_carte_jouee.carte
+                    couleur_demandee=premiere_carte_jouee
                 ):
                     print(
-                        f"Vous possèder du {premiere_carte_jouee.carte.couleur.forme} "
+                        f"Vous possèder du {premiere_carte_jouee.couleur.forme} "
                         "en main. "
-                        f"Vous ne pouvez pas jouer du {carte_a_jouer.carte.couleur.forme}"
+                        f"Vous ne pouvez pas jouer du {carte_a_jouer.couleur.forme}"
                     )
 
-                    self._jouer_carte(cartes_jouees=cartes_jouees)
+                    self._jouer_carte(pli=pli)
                 else:
                     if self._atout_en_main():
                         if (
-                            carte_a_jouer.carte.atout is False
+                            carte_a_jouer.atout is False
                             and carte_gagnante.joueur.equipe != self.equipe
                         ):
                             print("Vous devez couper !")
-                            self._jouer_carte(cartes_jouees=cartes_jouees)
+                            self._jouer_carte(pli=pli)
 
             else:
-                if premiere_carte_jouee.carte.atout and carte_a_jouer.carte.atout:
+                if premiere_carte_jouee.atout and carte_a_jouer.atout:
                     if carte_a_jouer < premiere_carte_jouee:
                         if self._meilleur_atout_en_main(other_atout=carte_gagnante):
                             print("Vous avez un atout supérieur en main")
-                            self._jouer_carte(cartes_jouees=cartes_jouees)
+                            self._jouer_carte(pli=pli)
 
         self.main.pop(index_carte)
         return carte_a_jouer

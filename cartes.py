@@ -1,5 +1,5 @@
 import random
-from collections.abc import Set
+from collections.abc import MutableSequence
 from typing import Literal
 
 VALEURS = ("7", "8", "9", "10", "V", "D", "R", "1")
@@ -43,56 +43,56 @@ class CarteBelote:
 
         self.atout: bool = False
 
-    # @property
-    # def score(self):
-    #     if self.atout:
-    #         if self.valeur == "V":
-    #             return 20
-    #         if self.valeur == "9":
-    #             return 14
+    @property
+    def score(self):
+        if self.atout:
+            if self.valeur == "V":
+                return 20
+            if self.valeur == "9":
+                return 14
 
-    #     if self.valeur == "1":
-    #         return 11
-    #     elif self.valeur == "V":
-    #         return 2
-    #     elif self.valeur == "D":
-    #         return 3
-    #     elif self.valeur == "R":
-    #         return 4
-    #     else:
-    #         return 0
+        if self.valeur == "1":
+            return 11
+        elif self.valeur == "V":
+            return 2
+        elif self.valeur == "D":
+            return 3
+        elif self.valeur == "R":
+            return 4
+        else:
+            return 0
 
-    # def __lt__(self, other):
-    #     """Permet de ranger les cartes dans la main"""
-    #     if self.atout:
-    #         if self.atout == COEUR:
-    #             ordre = ORDRE_COULEURS_DEFAUT
-    #         if self.atout == CARREAUX:
-    #             ordre = [CARREAUX, PIQUE, COEUR, TREFLE]
-    #         if self.atout == PIQUE:
-    #             ordre = [PIQUE, COEUR, TREFLE, CARREAUX]
-    #         if self.atout == TREFLE:
-    #             ordre = [TREFLE, COEUR, PIQUE, CARREAUX]
-    #     else:
-    #         ordre = ORDRE_COULEURS_DEFAUT
+    def __lt__(self, other):
+        """Permet de ranger les cartes dans la main"""
+        if self.atout:
+            if self.atout == COEUR:
+                ordre = ORDRE_COULEURS_DEFAUT
+            if self.atout == CARREAUX:
+                ordre = [CARREAUX, PIQUE, COEUR, TREFLE]
+            if self.atout == PIQUE:
+                ordre = [PIQUE, COEUR, TREFLE, CARREAUX]
+            if self.atout == TREFLE:
+                ordre = [TREFLE, COEUR, PIQUE, CARREAUX]
+        else:
+            ordre = ORDRE_COULEURS_DEFAUT
 
-    #     if self.couleur.forme == other.couleur.forme:
-    #         self_score = self.score
-    #         other_score = other.score
+        if self.couleur.forme == other.couleur.forme:
+            self_score = self.score
+            other_score = other.score
 
-    #         if self_score == 0 and other_score == 0:
-    #             self_integer = int(self.valeur)
-    #             other_integer = int(other.valeur)
-    #             return_bool = True if self_integer < other_integer else False
-    #         else:
-    #             return_bool = True if self_score < other_score else False
-    #     else:
-    #         if ordre.index(self.couleur) < ordre.index(other.couleur):
-    #             return_bool = True
-    #         else:
-    #             return_bool = False
+            if self_score == 0 and other_score == 0:
+                self_integer = int(self.valeur)
+                other_integer = int(other.valeur)
+                return_bool = True if self_integer < other_integer else False
+            else:
+                return_bool = True if self_score < other_score else False
+        else:
+            if ordre.index(self.couleur) < ordre.index(other.couleur):
+                return_bool = True
+            else:
+                return_bool = False
 
-    #     return return_bool
+        return return_bool
 
     def __repr__(self) -> str:
         return f"{self.valeur}{self.couleur.forme}"
@@ -104,22 +104,29 @@ class CarteBelote:
         return isinstance(other, CarteBelote) and hash(self) == hash(other)
 
 
-class CarteSet(Set):
+class CarteSetBelote(MutableSequence):
     def __init__(self, cartes=None) -> None:
         if cartes is None:
             cartes = []
         self.cartes = cartes
 
-    def __contains__(self, x: CarteBelote) -> bool:
-        if isinstance(x, CarteBelote) and x in self.cartes:
-            return True
-        return False
+    def __getitem__(self, index):
+        return self.cartes[index]
 
-    def __iter__(self):
-        return iter(self.cartes)
+    def __setitem__(self, index, value):
+        self.cartes[index] = value
+
+    def __delitem__(self, index):
+        del self.cartes[index]
 
     def __len__(self) -> int:
         return len(self.cartes)
+
+    def insert(self, index, carte):
+        return self.cartes.insert(index, carte)
+
+    def sort(self, reverse=False):
+        self.cartes.sort(reverse=reverse)
 
     def _ajouter_cartes(self, carte):
         self.cartes.append(carte)
@@ -140,56 +147,58 @@ class CarteSet(Set):
         rand_int = random.randint(1, len(self.cartes) - 1)
         self.cartes = self.cartes[rand_int:] + self.cartes[:rand_int]
 
+    def _trier_par_couleur(self):
+        coeurs, piques, carreaux, trefles = (
+            CarteSetBelote(),
+            CarteSetBelote(),
+            CarteSetBelote(),
+            CarteSetBelote(),
+        )
+        for carte in self.cartes:
+            coeurs.append(carte) if carte.couleur.forme == "♥" else ...
+            piques.append(carte) if carte.couleur.forme == "♠" else ...
+            carreaux.append(carte) if carte.couleur.forme == "♦" else ...
+            trefles.append(carte) if carte.couleur.forme == "♣" else ...
 
-class CarteSetBelote(CarteSet):
-    def _sort_main(self):
-        self._sort_force()
-
-    def _sort_force(self):
-        cartes_atouts = list(filter(lambda x: x.atout is True, self.cartes))
-        cartes_non_atouts = list(filter(lambda x: x.atout is False, self.cartes))
-
-        cartes_atouts_rangees = []
-        for carte in cartes_atouts:
-            index_force = ORDRE_ATOUT.index(carte.valeur)
-            cartes_atouts_rangees.append((carte, index_force))
-
-        cartes_atouts_rangees.sort(key=lambda x: x[1])
-
-        cartes_non_atouts_rangees = []
-        for carte in cartes_non_atouts:
-            index_force = ORDRE_NON_ATOUT.index(carte.valeur)
-            cartes_non_atouts_rangees.append((carte, index_force))
-
-        cartes_non_atouts_rangees.sort(key=lambda x: x[1])
-
-        return cartes_atouts_rangees + cartes_non_atouts_rangees
-
-    def sort(self, pour: Literal["main", "force"]):
-        """
-        Ranger les d'un jeu de belote
-        :param pour: Raison pour laquelle ranger les cartes
-        :type pour: Literal["main"; "force"]:
-            - "main": Pour ranger les cartes dans une main
-            - "force": par ordre de force (ex: 8 plus fort que 7 même si les
-            deux valent 0 points)
-        """
-
-        if pour == "main":
-            self._sort_main()
-        elif pour == "force":
-            self._sort_force()
-        else:
-            raise NotImplementedError(
-                f"Le paramètre 'pour' doit valoir \"main\" ou \"force\". '{pour=}'"
-            )
+        return coeurs, piques, carreaux, trefles
 
     @property
-    def carte_la_plus_forte(self):
-        return self.cartes.sort(pour="force")[0]
+    def _ranger_par_force(self):
+        coeurs, piques, carreaux, trefles = self._trier_par_couleur()
+        coeurs.sort(reverse=True)
+        piques.sort(reverse=True)
+        carreaux.sort(reverse=True)
+        trefles.sort(reverse=True)
+
+        cartes_par_couleur = []
+
+        if coeurs:
+            cartes_par_couleur.append(coeurs)
+
+        if piques:
+            cartes_par_couleur.append(piques)
+
+        if carreaux:
+            cartes_par_couleur.append(carreaux)
+
+        if trefles:
+            cartes_par_couleur.append(trefles)
+
+        cartes_par_couleur.sort(key=lambda x: x[0].atout is False)
+
+        result = CarteSetBelote()
+        for cartes in cartes_par_couleur:
+            for carte in cartes:
+                result.append(carte)
+
+        return result
+
+    @property
+    def _carte_la_plus_forte(self):
+        return self._ranger_par_force[0]
 
 
-class JeuDeCarte32(CarteSet):
+class JeuDeBelote(CarteSetBelote):
     def __init__(self):
         super().__init__(cartes=None)
 
