@@ -42,6 +42,11 @@ class Joueur:
     def __repr__(self) -> str:
         return self.nom
 
+    def _reinit(self):
+        self.doit_annoncer = True
+        self.main = CarteSetBelote()
+        self.plis = []
+
     def _afficher_main(self):
         print(self.main)
 

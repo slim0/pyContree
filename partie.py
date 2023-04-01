@@ -1,7 +1,7 @@
 import random
 
 from cartes import CarteSetBelote, JeuDeBelote
-from joueurs import ANNONCE_NULLE
+from joueurs import ANNONCE_NULLE, Joueur
 
 
 class Partie:
@@ -19,7 +19,7 @@ class Partie:
         print(f"Equipe B: {self.equipeB.score}")
 
     @property
-    def joueurs(self):
+    def joueurs(self) -> list[Joueur]:
         return [
             self.equipeA.joueur1,
             self.equipeB.joueur1,
@@ -33,7 +33,7 @@ class Partie:
             fin_manche = FinManche(partie=self).lancer()
             self.equipeA.score += fin_manche.score_equipeA
             self.equipeB.score += fin_manche.score_equipeB
-            self.donneur = fin_manche.nouveau_donneur
+            self.donneur: Joueur = fin_manche.nouveau_donneur
 
             if (
                 self.equipeA.score >= self.score_victoire
@@ -48,8 +48,7 @@ class Partie:
 
 class PhaseAnnonce:
     def __init__(self, ordre_initial) -> None:
-        self.joueurs_devant_annoncer = ordre_initial
-
+        self.joueurs_devant_annoncer: Joueur = ordre_initial
         self.meilleure_annonce = ANNONCE_NULLE
 
     def lancer(self):
@@ -72,7 +71,7 @@ class PhaseAnnonce:
 class PhaseJeu:
     def __init__(self, manche, ordre_initial) -> None:
         self.manche = manche
-        self.joueurs = ordre_initial
+        self.joueurs: list[Joueur] = ordre_initial
 
     def lancer(self):
         while True:
@@ -88,6 +87,8 @@ class PhaseJeu:
 
             carte_gagnante = carte_jouee_gagnante
             joueur_gagnant = carte_jouee_gagnante.joueur
+
+            joueur_gagnant.plis.append(pli)
 
             if len(self.joueurs[0].main) == 0:
                 break
@@ -132,9 +133,8 @@ class FinManche:
             joueurs_ordre_random = self.joueurs
             random.shuffle(joueurs_ordre_random)
             for joueur in joueurs_ordre_random:
-                joueur.doit_annoncer = True
                 self.partie.jeu_de_carte.cartes += joueur.main
-                joueur.main = CarteSetBelote()
+                joueur._reinit()
             return self._resultat_fin_manche()
 
         for joueur in self.joueurs:
@@ -155,7 +155,7 @@ class FinManche:
         return [joueur1, joueur2, joueur3, joueur4]
 
     @property
-    def joueurs(self):
+    def joueurs(self) -> list[Joueur]:
         return self.partie.joueurs
 
     def joueur_suivant(self, joueur_precedent):
