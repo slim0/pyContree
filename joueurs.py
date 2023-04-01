@@ -147,9 +147,10 @@ class Joueur:
             carte_gagnante = pli._carte_la_plus_forte
 
             if carte_a_jouer.couleur.forme != premiere_carte_jouee.couleur.forme:
-                if self._couleur_demandee_en_main(
+                couleur_en_main: bool = self._couleur_demandee_en_main(
                     couleur_demandee=premiere_carte_jouee
-                ):
+                )
+                if couleur_en_main:
                     print(
                         f"Vous possèder du {premiere_carte_jouee.couleur.forme} "
                         "en main. "
