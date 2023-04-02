@@ -230,7 +230,7 @@ class Pli(CarteSetBelote):
 
     @property
     def _points(self):
-        return self._points if not self.dernier_pli else self._points + 10
+        return super()._points if not self.dernier_pli else super()._points + 10
 
 
 class JeuDeBelote(CarteSetBelote):

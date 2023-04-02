@@ -93,7 +93,10 @@ class PhaseJeu:
             print(f"Pli remporté par {joueur_gagnant}\n")
 
             index_joueur_gagnant = self.joueurs.index(joueur_gagnant)
-            self.joueurs = self.joueurs[index_joueur_gagnant:] + self.joueurs[:index_joueur_gagnant]
+            self.joueurs = (
+                self.joueurs[index_joueur_gagnant:]
+                + self.joueurs[:index_joueur_gagnant]
+            )
 
             if len(self.joueurs[0].main) == 0:
                 pli.dernier_pli = True
@@ -157,13 +160,27 @@ class Manche:
         if equipe_prenante == self.partie.equipeA:
             if score_equipeA >= self.meilleure_annonce.score_a_faire:
                 print(f"Bravo {equipe_prenante}, contrat rempli")
+                self.score_equipeA = (
+                    score_equipeA + self.meilleure_annonce.score_a_faire
+                )
+                self.score_equipeB = score_equipeB
             else:
                 print(f"Contrat chuté par {equipe_prenante}")
+                self.score_equipeB = self.meilleure_annonce.score_a_faire + 162
+                self.score_equipeA = 0
         else:
             if score_equipeB >= self.meilleure_annonce.score_a_faire:
                 print(f"Bravo {equipe_prenante}, contrat rempli")
+                self.score_equipeB = (
+                    score_equipeB + self.meilleure_annonce.score_a_faire
+                )
+                self.score_equipeA = score_equipeA
             else:
                 print(f"Contrat chuté par {equipe_prenante}")
+                self.score_equipeA = self.meilleure_annonce.score_a_faire + 162
+                self.score_equipeB = 0
+
+        return self._resultat_fin_manche()
 
     @property
     def ordre_initial(self):
