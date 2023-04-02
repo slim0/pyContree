@@ -132,7 +132,6 @@ class Joueur:
 
     def _jouer_carte(self, pli: Pli, couleur_atout: Couleur):
         premiere_carte_jouee = pli[0] if pli else None
-        carte_precedente = pli[-1] if pli else None
 
         print(f"À toi de jouer {self}")
         self._afficher_main()
