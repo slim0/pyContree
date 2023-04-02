@@ -35,6 +35,7 @@ def poser_question(question, reponses_possibles):
 class Joueur:
     def __init__(self, nom: str):
         self.nom: str = nom
+        self.belote: bool = False
         self.main: CarteSetBelote = CarteSetBelote()
         self.doit_annoncer: bool = True
         self.equipe: Optional[Equipe] = None  # Défini lors de la création de l'équipe
@@ -45,6 +46,7 @@ class Joueur:
 
     def _reinit(self):
         self.doit_annoncer = True
+        self.belote = False
         self.main = CarteSetBelote()
         self.plis = []
 
@@ -53,6 +55,8 @@ class Joueur:
         score = 0
         for pli in self.plis:
             score += pli._points
+        if self.belote:
+            score += 20
         return score
 
     def _afficher_main(self):
@@ -175,6 +179,14 @@ class Joueur:
                             if self._meilleur_atout_en_main(other_atout=carte_gagnante):
                                 print("Vous avez un atout supérieur en main")
 
+            if self.belote and carte_a_jouer.atout:
+                if carte_a_jouer.valeur in ("D", "R"):
+                    atouts_en_main = list(filter(lambda x: x.atout is True, self.main))
+                    valeurs_atouts = list(map(lambda x: x.valeur, atouts_en_main))
+                    if "D" in valeurs_atouts or "R" in valeurs_atouts:
+                        print("Belote")
+                    else:
+                        print("Rebelote")
             self.main.pop(index_carte)
             return carte_a_jouer
 

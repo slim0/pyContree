@@ -148,9 +148,17 @@ class Manche:
             return self._resultat_fin_manche()
 
         for joueur in self.joueurs:
+            atout_dame = False
+            atout_roi = False
             for carte in joueur.main:
                 if carte.couleur.forme == self.meilleure_annonce.atout.forme:
                     carte.atout = True
+                    if carte.valeur == "R":
+                        atout_roi = True
+                    elif carte.valeur == "D":
+                        atout_dame = True
+            if atout_dame and atout_roi:
+                joueur.belote = True
 
         phase_jeu = PhaseJeu(manche=self, ordre_initial=self.ordre_initial)
         phase_jeu.lancer()
