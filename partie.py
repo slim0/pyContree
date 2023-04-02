@@ -93,6 +93,7 @@ class PhaseJeu:
             print(f"Pli remporté par {joueur_gagnant}\n")
 
             index_joueur_gagnant = self.joueurs.index(joueur_gagnant)
+            self.joueurs = self.joueurs[index_joueur_gagnant:] + self.joueurs[:index_joueur_gagnant]
 
             if len(self.joueurs[0].main) == 0:
                 pli.dernier_pli = True
