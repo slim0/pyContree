@@ -77,15 +77,22 @@ class PhaseJeu:
         while True:
             pli = Pli()
             for joueur in self.joueurs:
-                carte_jouee = joueur._jouer_carte(pli=pli)
+                carte_jouee = joueur._jouer_carte(
+                    pli=pli, couleur_atout=self.manche.meilleure_annonce.atout.couleur
+                )
                 pli.append(carte_jouee)
                 print(f"Carte jouée: {carte_jouee}")
 
-            pli_par_force = pli._ranger_par_force
+            pli_par_force = pli._ranger_par_force(
+                couleur_atout=self.manche.meilleure_annonce.atout.couleur
+            )
 
             carte_jouee_gagnante = pli_par_force[0]
             joueur_gagnant = carte_jouee_gagnante.joueur
             joueur_gagnant.plis.append(pli)
+            print(f"Pli remporté par {joueur_gagnant}\n")
+
+            index_joueur_gagnant = self.joueurs.index(joueur_gagnant)
 
             if len(self.joueurs[0].main) == 0:
                 pli.dernier_pli = True
@@ -105,6 +112,7 @@ class Manche:
         self.partie = partie
         self.score_equipeA = 0
         self.score_equipeB = 0
+        self.meilleure_annonce = None
 
         self.partie.jeu_de_carte._couper()
 

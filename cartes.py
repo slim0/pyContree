@@ -174,29 +174,41 @@ class CarteSetBelote(MutableSequence):
             total += carte.score
         return total
 
-    @property
-    def _ranger_par_force(self):
+    def _ranger_par_force(self, couleur_atout: Couleur):
+        """
+        1. Atouts
+        2. Couleur demandée
+        3. Couleur restante 1
+        4.Couleur restante 2
+        """
+        cartes_par_couleur = []
+
+        couleur_demandee = self[0].couleur
+
+        cartes_atout = CarteSetBelote(
+            list(filter(lambda x: x.atout is True, self.cartes))
+        )
+        cartes_atout.sort(reverse=True)
+        cartes_par_couleur.append(cartes_atout)
+
+        cartes_couleur_demandee = CarteSetBelote(
+            list(filter(lambda x: x.couleur == couleur_demandee, self.cartes))
+        )
+        cartes_couleur_demandee.sort(reverse=True)
+        cartes_par_couleur.append(cartes_couleur_demandee)
+
         coeurs, piques, carreaux, trefles = self._trier_par_couleur()
         coeurs.sort(reverse=True)
         piques.sort(reverse=True)
         carreaux.sort(reverse=True)
         trefles.sort(reverse=True)
 
-        cartes_par_couleur = []
-
-        if coeurs:
-            cartes_par_couleur.append(coeurs)
-
-        if piques:
-            cartes_par_couleur.append(piques)
-
-        if carreaux:
-            cartes_par_couleur.append(carreaux)
-
-        if trefles:
-            cartes_par_couleur.append(trefles)
-
-        cartes_par_couleur.sort(key=lambda x: x[0].atout is False)
+        for carte_set in [coeurs, piques, carreaux, trefles]:
+            if carte_set and carte_set[0].couleur not in (
+                couleur_atout,
+                couleur_demandee,
+            ):
+                cartes_par_couleur.append(coeurs)
 
         result = CarteSetBelote()
         for cartes in cartes_par_couleur:
@@ -205,9 +217,8 @@ class CarteSetBelote(MutableSequence):
 
         return result
 
-    @property
-    def _carte_la_plus_forte(self):
-        return self._ranger_par_force[0]
+    def _carte_la_plus_forte(self, couleur_atout: Couleur):
+        return self._ranger_par_force(couleur_atout=couleur_atout)[0]
 
 
 class Pli(CarteSetBelote):
