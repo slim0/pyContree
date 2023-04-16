@@ -1,7 +1,7 @@
 import random
 
 from cartes import JeuDeBelote, Pli
-from joueurs import ANNONCE_NULLE, Joueur
+from joueurs import ANNONCE_NULLE, Annonce, Joueur
 
 
 class Partie:
@@ -43,7 +43,7 @@ class Partie:
                 equipes.sort(lambda x: x.score, reverse=True)
                 self.equipe_gagnante = equipes[0]
 
-        print(f"Bravo {self.equipe_gagnante} !!")
+        print(f"Partie terminée et remportée par {self.equipe_gagnante}")
 
 
 class PhaseAnnonce:
@@ -51,7 +51,7 @@ class PhaseAnnonce:
         self.joueurs_devant_annoncer: Joueur = ordre_initial
         self.meilleure_annonce = ANNONCE_NULLE
 
-    def lancer(self):
+    def lancer(self) -> Annonce:
         while True in list(
             map(lambda x: x.doit_annoncer, self.joueurs_devant_annoncer)
         ):
@@ -142,6 +142,12 @@ class Manche:
         if self.meilleure_annonce.joueur is None:
             self._reinit_joueurs(annonce=False)
             return self._resultat_fin_manche()
+
+        print(
+            f"{self.meilleure_annonce.joueur} annonce "
+            f"{self.meilleure_annonce.score_a_faire} à "
+            f"{self.meilleure_annonce.atout.couleur}"
+        )
 
         for joueur in self.joueurs:
             atout_dame = False
