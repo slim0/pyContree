@@ -142,7 +142,7 @@ class Joueur:
                 index_carte = input("Index de la carte à jouer: ")
                 try:
                     index_carte = int(index_carte)
-                except:
+                except Exception:
                     ...
 
             carte_a_jouer = self.main[index_carte]

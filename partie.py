@@ -1,6 +1,6 @@
 import random
 
-from cartes import CarteSetBelote, JeuDeBelote, Pli
+from cartes import JeuDeBelote, Pli
 from joueurs import ANNONCE_NULLE, Joueur
 
 
@@ -140,11 +140,7 @@ class Manche:
         self.meilleure_annonce = phase_annonce.lancer()
 
         if self.meilleure_annonce.joueur is None:
-            joueurs_ordre_random = self.joueurs
-            random.shuffle(joueurs_ordre_random)
-            for joueur in joueurs_ordre_random:
-                self.partie.jeu_de_carte.cartes += joueur.main
-                joueur._reinit()
+            self._reinit_joueurs(annonce=False)
             return self._resultat_fin_manche()
 
         for joueur in self.joueurs:
@@ -188,7 +184,26 @@ class Manche:
                 self.score_equipeA = self.meilleure_annonce.score_a_faire + 162
                 self.score_equipeB = 0
 
+        self._reinit_joueurs(annonce=True)
         return self._resultat_fin_manche()
+
+    def _reinit_joueurs(self, annonce: bool):
+        """Réinitialisation des joueurs
+
+        :param annonce: Indique si une annonce a été faite ou non
+        :type annonce: bool
+        :return: None
+        :rtype: None
+        """
+        joueurs_ordre_random = self.joueurs
+        random.shuffle(joueurs_ordre_random)
+        for joueur in joueurs_ordre_random:
+            if annonce:
+                for pli in joueur.plis:
+                    self.partie.jeu_de_carte.cartes += pli
+            else:
+                self.partie.jeu_de_carte.cartes += joueur.main
+            joueur._reinit()
 
     @property
     def ordre_initial(self):
